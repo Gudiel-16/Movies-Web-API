@@ -9,6 +9,9 @@ var Configuration = builder.Configuration;
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Configurando AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
 // Configurando el dbContext de nuestra app
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(Configuration.GetConnectionString("defaultConnection")));
