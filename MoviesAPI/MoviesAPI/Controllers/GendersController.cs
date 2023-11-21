@@ -22,6 +22,7 @@ namespace MoviesAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<List<GenderDTO>>> Get()
         {
+            // ToListAsync: retorna todos los generos
             var entities = await context.Genders.ToListAsync();
             var dtos = mapper.Map<List<GenderDTO>>(entities); // Map de Gender a GenderDTO
             return dtos;
