@@ -15,6 +15,7 @@ namespace MoviesAPI.Helpers
             // ForMember: para ignorar el campo foto, para que no actualice siempre, solo cuando es necesario
             CreateMap<Actor, ActorDTO>().ReverseMap();
             CreateMap<ActorCreateDTO, Actor>().ForMember(x => x.Photo, options => options.Ignore());
+            CreateMap<ActorPatchDTO, Actor>().ReverseMap();
         }
     }
 }

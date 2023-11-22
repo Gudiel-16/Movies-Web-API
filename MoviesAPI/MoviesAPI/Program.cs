@@ -8,7 +8,8 @@ var builder = WebApplication.CreateBuilder(args);
 var Configuration = builder.Configuration;
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddNewtonsoftJson(); // para el uso de Patch
 
 // Configurando AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));

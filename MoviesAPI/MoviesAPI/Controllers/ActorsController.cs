@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Azure;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoviesAPI.DTOs;
@@ -93,6 +95,32 @@ namespace MoviesAPI.Controllers
             //context.Entry(entity).State = EntityState.Modified;
 
             await context.SaveChangesAsync();
+            return NoContent();
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorPatchDTO> patchDocument)
+        {
+            if(patchDocument == null) { return BadRequest(); }
+
+            var entityDB = await context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+
+            if(entityDB == null) { return NotFound(); }
+
+            // lleno ActorPatchDTO con la informacion de entityDB
+            var entityDTO = mapper.Map<ActorPatchDTO>(entityDB);
+
+            // aplico a ActorPatchDTO los cambios que vinieron en el patchDocument, por ejemplo solo el name
+            patchDocument.ApplyTo(entityDTO, ModelState); // en modelState se guardan los errores
+
+            var isValid = TryValidateModel(entityDTO);
+
+            if(!isValid) { return BadRequest(); }
+
+            mapper.Map(entityDTO, entityDB);
+
+            await context.SaveChangesAsync();
+
             return NoContent();
         }
 
