@@ -58,15 +58,15 @@ namespace MoviesAPI.Controllers
                 }
             }
 
-            //context.Add(entity);
-            //await context.SaveChangesAsync();
+            context.Add(entity);
+            await context.SaveChangesAsync();
 
             var dto = mapper.Map<ActorDTO>(entity);
             return new CreatedAtRouteResult("getActor", new { id = entity.Id }, dto);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] ActorCreateDTO actorCreateDTO)
+        public async Task<ActionResult> Put(int id, [FromForm] ActorCreateDTO actorCreateDTO)
         {
             var actorDB = await context.Actors.FirstOrDefaultAsync(x => x.Id == id);
             
