@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MoviesAPI.DTOs;
 using MoviesAPI.Entities;
+using MoviesAPI.Services;
 
 namespace MoviesAPI.Controllers
 {
@@ -12,10 +13,13 @@ namespace MoviesAPI.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly IFileStorage fileStorage;
+        private readonly string storage = "actors"; // nombre de carpeta en Azure (imagenes)
 
-        public ActorsController(ApplicationDbContext context, IMapper mapper) {
+        public ActorsController(ApplicationDbContext context, IMapper mapper, IFileStorage fileStorage) {
             this.context = context;
             this.mapper = mapper;
+            this.fileStorage = fileStorage;
         }
 
         [HttpGet]
@@ -41,6 +45,19 @@ namespace MoviesAPI.Controllers
         public async Task<ActionResult> Post([FromForm] ActorCreateDTO actorCreateDTO)
         {
             var entity = mapper.Map<Actor>(actorCreateDTO);
+
+            // guardando foto en azure
+            if(actorCreateDTO.Photo != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await actorCreateDTO.Photo.CopyToAsync(memoryStream);
+                    var content = memoryStream.ToArray();
+                    var extension = Path.GetExtension(actorCreateDTO.Photo.FileName);
+                    entity.Photo = await fileStorage.saveFile(content, extension, storage, actorCreateDTO.Photo.ContentType);
+                }
+            }
+
             //context.Add(entity);
             //await context.SaveChangesAsync();
 
@@ -51,9 +68,30 @@ namespace MoviesAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] ActorCreateDTO actorCreateDTO)
         {
-            var entity = mapper.Map<Actor>(actorCreateDTO);
-            entity.Id = id;
-            context.Entry(entity).State = EntityState.Modified;
+            var actorDB = await context.Actors.FirstOrDefaultAsync(x => x.Id == id);
+            
+            if (actorDB == null) { return NotFound(); }
+
+            // para que solo actualize los campos enviados, campo photo es ignorado, configurado en AutoMapperProfiles
+            actorDB = mapper.Map(actorCreateDTO, actorDB);
+
+            // guardando foto en azure
+            if (actorCreateDTO.Photo != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await actorCreateDTO.Photo.CopyToAsync(memoryStream);
+                    var content = memoryStream.ToArray();
+                    var extension = Path.GetExtension(actorCreateDTO.Photo.FileName);
+                    actorDB.Photo = await fileStorage.editFile(content, extension, storage, actorDB.Photo, actorCreateDTO.Photo.ContentType);
+                }
+            }
+
+            // actualizar todos los campos (antes 1.0)
+            //var entity = mapper.Map<Actor>(actorCreateDTO);
+            //entity.Id = id;
+            //context.Entry(entity).State = EntityState.Modified;
+
             await context.SaveChangesAsync();
             return NoContent();
         }

@@ -20,7 +20,7 @@ namespace MoviesAPI.Services
             }
 
             var client = new BlobContainerClient(connectionString, storage);
-            await client.CreateIfNotExistsAsync();
+            await client.CreateIfNotExistsAsync(); // crear contenedor si no existe
             var file = Path.GetFileName(route);
             var blob = client.GetBlobClient(file);
             await blob.DeleteIfExistsAsync();
