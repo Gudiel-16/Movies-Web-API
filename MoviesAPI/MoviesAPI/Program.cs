@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using MoviesAPI;
+using MoviesAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +12,9 @@ builder.Services.AddControllers();
 
 // Configurando AutoMapper
 builder.Services.AddAutoMapper(typeof(Program));
+
+// Servicio Azure
+builder.Services.AddTransient<IFileStorage, FileStorageAzure>();
 
 // Configurando el dbContext de nuestra app
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
