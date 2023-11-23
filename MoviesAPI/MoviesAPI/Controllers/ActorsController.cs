@@ -17,7 +17,7 @@ namespace MoviesAPI.Controllers
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
         private readonly IFileStorage fileStorage;
-        private readonly string storage = "actors"; // nombre de carpeta en Azure (imagenes)
+        private readonly string storage = "actors"; // nombre de carpeta en Azure o Local (imagenes)
 
         public ActorsController(ApplicationDbContext context, IMapper mapper, IFileStorage fileStorage) {
             this.context = context;
@@ -54,7 +54,7 @@ namespace MoviesAPI.Controllers
         {
             var entity = mapper.Map<Actor>(actorCreateDTO);
 
-            // guardando foto en azure
+            // guardando foto
             if(actorCreateDTO.Photo != null)
             {
                 using (var memoryStream = new MemoryStream())
