@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client.Extensions.Msal;
 using MoviesAPI.DTOs;
 using MoviesAPI.Entities;
+using MoviesAPI.Migrations;
 using MoviesAPI.Services;
 
 namespace MoviesAPI.Controllers
@@ -59,6 +60,8 @@ namespace MoviesAPI.Controllers
                 }
             }
 
+            assignOrderActors(movie);
+
             context.Add(movie);
             await context.SaveChangesAsync();
 
@@ -69,7 +72,10 @@ namespace MoviesAPI.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromForm] MovieCreateDTO movieCreateDTO)
         {
-            var movieDB = await context.Movies.FirstOrDefaultAsync(x => x.Id == id);
+            var movieDB = await context.Movies
+                .Include(x => x.MoviesActors) // incluimos para poder mostrar
+                .Include(x => x.MoviesGenders)
+                .FirstOrDefaultAsync(x => x.Id == id);
 
             if (movieDB == null) { return NotFound(); }
 
@@ -87,6 +93,8 @@ namespace MoviesAPI.Controllers
                     movieDB.Poster = await fileStorage.editFile(content, extension, storage, movieDB.Poster, movieCreateDTO.Poster.ContentType);
                 }
             }
+
+            assignOrderActors(movieDB);
 
             await context.SaveChangesAsync();
             return NoContent();
@@ -132,6 +140,17 @@ namespace MoviesAPI.Controllers
             context.Remove(new Movie() { Id = id }); // basta solo con el id para eliminar
             await context.SaveChangesAsync();
             return NoContent();
+        }
+
+        private void assignOrderActors(Movie movie)
+        {
+            if(movie.MoviesActors != null)
+            {
+                for (int i = 0; i < movie.MoviesActors.Count; i++)
+                {
+                    movie.MoviesActors[i].Order = i;
+                }
+            }
         }
 
 

@@ -11,5 +11,7 @@ namespace MoviesAPI.Entities
         public bool InCinemas { get; set; } // si esta actual en cine
         public DateTime ReleaseDate { get; set; } // en que fecha se va estrenar
         public string Poster { get; set; } // URL al poster de la pelicula
+        public List<MoviesActors> MoviesActors { get; set; } // navegacion
+        public List<MoviesGenders> MoviesGenders { get; set; } // navegacion
     }
 }
