@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client.Extensions.Msal;
 using MoviesAPI.DTOs;
 using MoviesAPI.Entities;
+using MoviesAPI.Helpers;
 using MoviesAPI.Migrations;
 using MoviesAPI.Services;
 
@@ -52,6 +53,43 @@ namespace MoviesAPI.Controllers
 
             //var movies = await context.Movies.ToListAsync();
             //return mapper.Map<List<MovieDTO>>(movies);
+        }
+
+        [HttpGet("filter")]
+        public async Task<ActionResult<List<MovieDTO>>> Filter([FromQuery] FilterMoviesDTO filterMoviesDTO)
+        {
+            var moviesQueryable = context.Movies.AsQueryable();
+            
+            // si se cumple agrega el filtro
+            if(!string.IsNullOrEmpty(filterMoviesDTO.Title))
+            {
+                moviesQueryable = moviesQueryable.Where(x => x.Title.Contains(filterMoviesDTO.Title));
+            }
+
+            if(filterMoviesDTO.InCinemas)
+            {
+                moviesQueryable = moviesQueryable.Where(x => x.InCinemas);
+            }
+
+            if(filterMoviesDTO.NextReleases)
+            {
+                var hoy = DateTime.Today;
+                moviesQueryable = moviesQueryable.Where(x => x.ReleaseDate > hoy);
+            }
+
+            if(filterMoviesDTO.GenderId != 0)
+            {
+                moviesQueryable = moviesQueryable // select: para nevagar entre los campos de navegacion
+                    .Where(x => x.MoviesGenders.Select(y => y.GenderId).Contains(filterMoviesDTO.GenderId));
+            }
+
+            // insertando header
+            await HttpContext.InsertParametersPagination(moviesQueryable, filterMoviesDTO.NumberOfRecordsPerPage);
+
+            // paginando
+            var movies = await moviesQueryable.Paginate(filterMoviesDTO.Pagination).ToListAsync();
+
+            return mapper.Map<List<MovieDTO>>(movies);
         }
 
         [HttpGet("{id}", Name = "getMovie")]
