@@ -21,7 +21,7 @@ namespace MoviesAPI.DTOs
         [ModelBinder(BinderType = typeof(TypeBinder<List<int>>))] // TypeBinder de nuestro Helpers, le pasamos tipo de dato en TypeBinder, ya que es generico
         public List<int> GendersIDs { get; set; } // listado de generos de la pelicula, se va mapear con 'MoviesGenders' de 'Movie'
 
-        [ModelBinder(BinderType = typeof(TypeBinder<IEnumerable<ActorsMoviesCreateDTO>>))] // le pasamos tipo de dato en TypeBinder, ya que es generico
-        public IEnumerable<ActorsMoviesCreateDTO> Actors { get; set; } // actores de la pelicula, se va mapear con 'MoviesActors' de 'Movie', IEnumerable para hacer uso de ActorsMoviesCreateDTO
+        [ModelBinder(BinderType = typeof(TypeBinder<List<ActorsMoviesCreateDTO>>))] // le pasamos tipo de dato en TypeBinder, ya que es generico
+        public List<ActorsMoviesCreateDTO> Actors { get; set; } // actores de la pelicula, se va mapear con 'MoviesActors' de 'Movie'
     }
 }
